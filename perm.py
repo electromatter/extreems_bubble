@@ -204,6 +204,9 @@ class Identity(Cycle):
 
 	__new__ = FrozenDict.__new__
 
+	def __iter__(self):
+		return iter([])
+
 	def order(self):
 		return 1
 
