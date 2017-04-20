@@ -190,7 +190,7 @@ class Cycle(Permutation):
 		order = self.order()
 		exp %= order
 		if exp == 0:
-			return identity()
+			return Identity()
 		elif exp == 1:
 			return self
 		elif gcd(exp, order) == 1:
