@@ -234,14 +234,15 @@ def _make_domain(*args, **kwargs):
 	return list(*args, **kwargs)
 
 def random_permutation(*args, **kwargs):
+	rng = kwargs.pop('random', None)
 	x = _make_domain(*args, **kwargs)
 	y = list(x)
-	random.shuffle(y, **kwargs)
+	random.shuffle(y, rng)
 	return Permutation(zip(x, y))
 
 def random_cycle(*args, **kwargs):
 	rng = kwargs.pop('random', None)
 	x = _make_domain(*args, **kwargs)
-	random.shuffle(x, **kwargs)
+	random.shuffle(y, rng)
 	return Cycle(x)
 
