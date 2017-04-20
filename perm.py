@@ -119,7 +119,7 @@ class Permutation(FrozenDict):
 		for orbit in self.orbits():
 			if key in orbit:
 				return orbit
-		return None
+		return Identity()
 
 	def __getitem__(self, key):
 		try:
