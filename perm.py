@@ -1,4 +1,4 @@
-__all__ = ('Permutation', 'Cycle', 'Identity')
+__all__ = ('Permutation', 'Cycle', 'Identity', 'IDENTITY')
 
 import collections
 import random
@@ -70,7 +70,7 @@ class Permutation(FrozenDict):
 		except TypeError:
 			pass
 		if len(orbits) == 0:
-			return Identity()
+			return IDENTITY
 		elif len(orbits) == 1:
 			return orbits[0]
 		self._orbits = tuple(orbits)
@@ -78,36 +78,17 @@ class Permutation(FrozenDict):
 		return self
 
 	@classmethod
-	def from_list(cls, x, y):
-		return cls(zip(x, y))
-
-	@classmethod
-	def from_cycles(cls, *args):
+	def from_product(cls, *args):
 		if len(args) == 1 and hasattr(args[0], '__iter__'):
 			args = args[0]
 		if len(args) == 0:
-			return Identity()
+			return IDENTITY
 		elif len(args) == 1:
 			return Cycle(args)
 		mapping = {}
 		for cycle in reversed(args):
 			mapping.update({k: mapping.get(v, v) for k, v in Cycle(cycle).items()})
 		return cls(mapping)
-
-	@classmethod
-	def random_permutation(cls, x, **kwargs):
-		x = list(x)
-		y = list(x)
-		random.shuffle(y, **kwargs)
-		return cls.from_list(x, y)
-
-	random = random_permutation
-
-	@classmethod
-	def random_cycle(cls, x, **kwargs):
-		x = list(x)
-		random.shuffle(x, **kwargs)
-		return Cycle(x)
 
 	def order(self):
 		return self._order
@@ -119,7 +100,7 @@ class Permutation(FrozenDict):
 		for orbit in self.orbits():
 			if key in orbit:
 				return orbit
-		return Identity()
+		return IDENTITY
 
 	def __getitem__(self, key):
 		try:
@@ -142,7 +123,7 @@ class Permutation(FrozenDict):
 		return self[key]
 
 	def __repr__(self):
-		return '%s.Permutation.from_cycles%r' % (__name__, self.orbits())
+		return '%s.Permutation.from_product%r' % (__name__, self.orbits())
 
 class Cycle(Permutation):
 	__slots__ = ('_cycle')
@@ -150,9 +131,9 @@ class Cycle(Permutation):
 	def __new__(cls, *args):
 		if len(args) == 1 and hasattr(args[0], '__iter__'):
 			args = args[0]
-		if len(args) <= 1:
-			return Identity()
 		args = tuple(args)
+		if len(args) <= 1:
+			return IDENTITY
 		try:
 			repeat_index = args.index(args[0], 1)
 		except ValueError:
@@ -170,8 +151,6 @@ class Cycle(Permutation):
 		self._cycle = args
 		return self
 
-	random = Permutation.random_cycle
-
 	def __iter__(self):
 		return iter(self._cycle)
 
@@ -184,15 +163,17 @@ class Cycle(Permutation):
 	def orbit(self, key):
 		if key in self:
 			return self
-		return Identity()
+		return IDENTITY
 
 	def __pow__(self, exp):
 		order = self.order()
 		exp %= order
 		if exp == 0:
-			return Identity()
+			return IDENTITY
 		elif exp == 1:
 			return self
+		elif exp == order - 1:
+			return Cycle(reversed(self._cycle))
 		elif gcd(exp, order) == 1:
 			cycle = []
 			index = 0
@@ -213,7 +194,7 @@ class Cycle(Permutation):
 				unseen.remove(index)
 			if len(cycle) > 1:
 				cycles.append(cycle)
-		return Permutation.from_cycles(cycles)
+		return Permutation.from_product(cycles)
 
 	def __repr__(self):
 		return '%s.Cycle%r' % (__name__, self._cycle)
@@ -239,5 +220,28 @@ class Identity(Cycle):
 		return other
 
 	def __repr__(self):
-		return '%s.Identity()' % __name__
+		return '%s.IDENTITY' % __name__
+
+IDENTITY = Identity()
+
+def _make_domain(*args, **kwargs):
+	if not args and not kwargs:
+		raise TypeError('expected arguments')
+	try:
+		return list(range(*args, **kwargs))
+	except TypeError:
+		pass
+	return list(*args, **kwargs)
+
+def random_permutation(*args, **kwargs):
+	x = _make_domain(*args, **kwargs)
+	y = list(x)
+	random.shuffle(y, **kwargs)
+	return Permutation(zip(x, y))
+
+def random_cycle(*args, **kwargs):
+	rng = kwargs.pop('random', None)
+	x = _make_domain(*args, **kwargs)
+	random.shuffle(x, **kwargs)
+	return Cycle(x)
 
