@@ -84,9 +84,13 @@ class Permutation(FrozenDict):
 	def from_cycles(cls, *args):
 		if len(args) == 1 and hasattr(args[0], '__iter__'):
 			args = args[0]
+		if len(args) == 0:
+			return Identity()
+		elif len(args) == 1:
+			return Cycle(args)
 		mapping = {}
 		for cycle in reversed(args):
-			mapping.update({k: mapping.get(v, v)} for k, v in Cycle(cycle))
+			mapping.update({k: mapping.get(v, v) for k, v in Cycle(cycle).items()})
 		return cls(mapping)
 
 	def order(self):
@@ -118,6 +122,9 @@ class Permutation(FrozenDict):
 		mapping.update({k: mapping.get(v, v)} for k, v in other.items())
 		return Permutation(mapping)
 
+	def __call__(self, key):
+		return self[key]
+
 	def __repr__(self):
 		return '%s.Permutation.from_orbits%r' % (__name__, self.orbits())
 
@@ -130,7 +137,10 @@ class Cycle(Permutation):
 		if len(args) <= 1:
 			return Identity()
 		args = tuple(args)
-		repeat_index = args.index(args[0], 1)
+		try:
+			repeat_index = args.index(args[0], 1)
+		except ValueError:
+			repeat_index = len(args)
 		args, repeat = args[:repeat_index], args[repeat_index:]
 		mapping = dict(zip(args, args[1:] + args[:1]))
 		if len(mapping) < len(args) or set(zip(args, repeat[1:] + repeat[:1])) - mapping.items():
@@ -144,6 +154,9 @@ class Cycle(Permutation):
 		self._cycle = args
 		return self
 
+	def __iter__(self):
+		return iter(self._cycle)
+
 	def order(self):
 		return len(self)
 
@@ -156,7 +169,33 @@ class Cycle(Permutation):
 		return Identity()
 
 	def __pow__(self, exp):
-		return self
+		order = self.order()
+		exp %= order
+		if exp == 0:
+			return identity()
+		elif exp == 1:
+			return self
+		elif gcd(exp, order) == 1:
+			cycle = []
+			index = 0
+			for _ in range(order):
+				index  = (index + exp) % order
+				cycle.append(self._cycle[index])
+			return Cycle(cycle)
+		unseen = set(range(order))
+		cycles = []
+		while unseen:
+			index = first = unseen.pop()
+			cycle = []
+			while True:
+				cycle.append(self._cycle[index])
+				index = (index + exp) % order
+				if index == first:
+					break
+				unseen.remove(index)
+			if len(cycle) > 1:
+				cycles.append(cycle)
+		return Permutation.from_cycles(cycles)
 
 	def __repr__(self):
 		return '%s.Cycle%r' % (__name__, self._cycle)
