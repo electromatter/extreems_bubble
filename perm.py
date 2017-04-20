@@ -1,6 +1,7 @@
 __all__ = ('Permutation', 'Cycle', 'Identity')
 
 import collections
+import random
 
 def gcd(*args):
 	if len(args) == 1 and hasattr(args[0], '__iter__'):
@@ -77,8 +78,8 @@ class Permutation(FrozenDict):
 		return self
 
 	@classmethod
-	def from_list(cls, seq):
-		return cls(enumerate(seq, start=1))
+	def from_list(cls, *args, **kwargs):
+		return cls(enumerate(*args, **kwargs))
 
 	@classmethod
 	def from_cycles(cls, *args):
@@ -92,6 +93,17 @@ class Permutation(FrozenDict):
 		for cycle in reversed(args):
 			mapping.update({k: mapping.get(v, v) for k, v in Cycle(cycle).items()})
 		return cls(mapping)
+
+	@classmethod
+	def random(cls, n, *args, **kwargs):
+		start = kwargs.pop('start', 0)
+		if args:
+			if 'start' in kwargs:
+				raise TypeError('got multiple values for start')
+			start, (n,) = n, *args
+		x = list(range(start, n + start))
+		random.shuffle(x, **kwargs)
+		return cls.from_list(x, start=start)
 
 	def order(self):
 		return self._order
