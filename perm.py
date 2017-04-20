@@ -78,8 +78,8 @@ class Permutation(FrozenDict):
 		return self
 
 	@classmethod
-	def from_list(cls, *args, **kwargs):
-		return cls(enumerate(*args, **kwargs))
+	def from_list(cls, x, y):
+		return cls(zip(x, y))
 
 	@classmethod
 	def from_cycles(cls, *args):
@@ -95,16 +95,19 @@ class Permutation(FrozenDict):
 		return cls(mapping)
 
 	@classmethod
-	def random(cls, n, *args, **kwargs):
-		if args:
-			if 'start' in kwargs:
-				raise TypeError('got multiple values for start')
-			start, n = n, *args
-		else:
-			start = kwargs.pop('start', 0)
-		x = list(range(start, n + start))
+	def random_permutation(cls, x, **kwargs):
+		x = list(x)
+		y = list(x)
+		random.shuffle(y, **kwargs)
+		return cls.from_list(x, y)
+
+	random = random_permutation
+
+	@classmethod
+	def random_cycle(cls, x, **kwargs):
+		x = list(x)
 		random.shuffle(x, **kwargs)
-		return cls.from_list(x, start=start)
+		return Cycle(x)
 
 	def order(self):
 		return self._order
@@ -166,6 +169,8 @@ class Cycle(Permutation):
 		self = FrozenDict.__new__(cls, mapping)
 		self._cycle = args
 		return self
+
+	random = Permutation.random_cycle
 
 	def __iter__(self):
 		return iter(self._cycle)
