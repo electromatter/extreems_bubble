@@ -96,11 +96,12 @@ class Permutation(FrozenDict):
 
 	@classmethod
 	def random(cls, n, *args, **kwargs):
-		start = kwargs.pop('start', 0)
 		if args:
 			if 'start' in kwargs:
 				raise TypeError('got multiple values for start')
 			start, (n,) = n, *args
+		else:
+			start = kwargs.pop('start', 0)
 		x = list(range(start, n + start))
 		random.shuffle(x, **kwargs)
 		return cls.from_list(x, start=start)
