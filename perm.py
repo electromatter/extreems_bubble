@@ -99,7 +99,7 @@ class Permutation(FrozenDict):
 		if args:
 			if 'start' in kwargs:
 				raise TypeError('got multiple values for start')
-			start, (n,) = n, *args
+			start, n = n, *args
 		else:
 			start = kwargs.pop('start', 0)
 		x = list(range(start, n + start))
