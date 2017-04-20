@@ -142,7 +142,7 @@ class Permutation(FrozenDict):
 		return self[key]
 
 	def __repr__(self):
-		return '%s.Permutation.from_orbits%r' % (__name__, self.orbits())
+		return '%s.Permutation.from_cycles%r' % (__name__, self.orbits())
 
 class Cycle(Permutation):
 	__slots__ = ('_cycle')
