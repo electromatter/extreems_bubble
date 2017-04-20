@@ -135,7 +135,7 @@ class Permutation(FrozenDict):
 
 	def __mul__(self, other):
 		mapping = dict(self)
-		mapping.update({k: mapping.get(v, v)} for k, v in other.items())
+		mapping.update({k: mapping.get(v, v) for k, v in other.items()})
 		return Permutation(mapping)
 
 	def __call__(self, key):
