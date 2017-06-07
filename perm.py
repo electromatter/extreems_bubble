@@ -1,9 +1,11 @@
+'Permutations as mappings'
+
 __all__ = ('Permutation', 'Cycle', 'IDENTITY')
 
-import collections
-import random
+import _collections
+import _random
 
-def gcd(*args):
+def _gcd(*args):
     '''gcd(iterable)
     gcd(*args) -> gcd(args)
 
@@ -17,7 +19,7 @@ def gcd(*args):
             x, g = g % x, x
     return g
 
-def lcm(*args):
+def _lcm(*args):
     '''lcm(iterable)
     lcm(*args) -> lcm(args)
 
@@ -27,10 +29,10 @@ def lcm(*args):
         args = iter(args[0])
     m = 1
     for x in args:
-        m *= (x // gcd(x, m))
+        m *= (x // _gcd(x, m))
     return m
 
-class FrozenDict(collections.abc.Mapping):
+class FrozenDict(_collections.abc.Mapping):
     '''FrozenDict() -> empty immutable mapping
     FrozenDict(mapping) -> immutable copy of mapping
     FrozenDict(iterable) -> FrozenDict(dict(iterable))
@@ -114,7 +116,7 @@ class Permutation(FrozenDict):
 
         # Otherwise, this permutation is a product of disjoint cycles
         self.__orbits = tuple(orbits)
-        self.__order = lcm(orbit.order() for orbit in self.__orbits)
+        self.__order = _lcm(orbit.order() for orbit in self.__orbits)
         return self
 
     @classmethod
@@ -262,7 +264,7 @@ class Cycle(Permutation):
             return self
         elif exp == order - 1:
             return Cycle(reversed(self.__cycle))
-        elif gcd(exp, order) == 1:
+        elif _gcd(exp, order) == 1:
             cycle = []
             index = 0
             for _ in range(order):
@@ -342,7 +344,7 @@ def random_permutation(*args, **kwargs):
     rng = kwargs.pop('random', None)
     x = _make_domain(*args, **kwargs)
     y = list(x)
-    random.shuffle(y, rng)
+    _random.shuffle(y, rng)
     return Permutation(zip(x, y))
 
 def random_cycle(*args, **kwargs):
@@ -356,5 +358,5 @@ def random_cycle(*args, **kwargs):
     '''
     rng = kwargs.pop('random', None)
     x = _make_domain(*args, **kwargs)
-    random.shuffle(x, rng)
+    _random.shuffle(x, rng)
     return Cycle(x)
