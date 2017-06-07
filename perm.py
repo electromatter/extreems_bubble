@@ -134,11 +134,11 @@ class Permutation(_FrozenDict):
             return IDENTITY
         elif len(args) == 1:
             # Product with one term
-            return Cycle(args)
+            return Permutation(args)
 
         mapping = {}
-        for cycle in reversed(args):
-            mapping.update(cycle * mapping)
+        for perm in reversed(args):
+            mapping.update(perm * mapping)
 
         return cls(mapping)
 
@@ -177,11 +177,17 @@ class Permutation(_FrozenDict):
 
     def __mul__(self, other):
         'self * other -> self applied to other'
-        return Permutation((k, self[other[k]]) for k in other)
+        mapping = dict(self)
+        for key in other:
+            mapping[key] = self[other[key]]
+        return Permutation(mapping)
 
     def __rmul__(self, other):
         'other * self -> other applied to self'
-        return Permutation((k, other.get(v, v)) for k, v in self.items())
+        mapping = dict(other)
+        for key, value in self.items():
+            mapping[key] = other.get(value)
+        return Permutation(mapping)
 
     def __call__(self, key):
         'Apply this permutation to key'
@@ -239,7 +245,7 @@ class Cycle(Permutation):
         return self
 
     def __iter__(self):
-        return self.__cycle
+        return iter(self.__cycle)
 
     def order(self):
         return len(self)
@@ -313,6 +319,9 @@ class Identity(Cycle):
         return self
 
     def __mul__(self, other):
+        return other
+
+    def __rmul__(self, other):
         return other
 
     def __repr__(self):
