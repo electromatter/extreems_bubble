@@ -2,8 +2,8 @@
 
 __all__ = ('Permutation', 'Cycle', 'IDENTITY')
 
-import _collections
-import _random
+import collections as _collections
+import random as _random
 
 def _gcd(*args):
     '''gcd(iterable)
@@ -13,11 +13,11 @@ def _gcd(*args):
     '''
     if len(args) == 1 and hasattr(args[0], '__iter__'):
         args = iter(args[0])
-    g = 0
-    for x in args:
-        while x > 0:
-            x, g = g % x, x
-    return g
+    gcd = 0
+    for val in args:
+        while val > 0:
+            val, gcd = gcd % val, val
+    return gcd
 
 def _lcm(*args):
     '''lcm(iterable)
@@ -27,12 +27,12 @@ def _lcm(*args):
     '''
     if len(args) == 1 and hasattr(args[0], '__iter__'):
         args = iter(args[0])
-    m = 1
-    for x in args:
-        m *= (x // _gcd(x, m))
-    return m
+    lcm = 1
+    for val in args:
+        lcm *= (val // _gcd(val, lcm))
+    return lcm
 
-class FrozenDict(_collections.abc.Mapping):
+class _FrozenDict(_collections.abc.Mapping):
     '''FrozenDict() -> empty immutable mapping
     FrozenDict(mapping) -> immutable copy of mapping
     FrozenDict(iterable) -> FrozenDict(dict(iterable))
@@ -62,13 +62,12 @@ class FrozenDict(_collections.abc.Mapping):
         return self.__hash
 
     def __repr__(self):
-        return '%s.FrozenDict(%r)' % (__name__, self._map)
+        return 'FrozenDict(%r)' % self.__map
 
-class Permutation(FrozenDict):
+class Permutation(_FrozenDict):
     '''Permutation() -> IDENTITY
     Permutation(mapping) -> extracts the permutation from the mapping
     Permutation(iterable) -> Permutation(dict(iterable))
-    Permutation(**kwargs) -> Permutation(kwargs)
 
     This is an immutable permutation generalized from python mappings.
     Permutations support the usual mapping interface.
@@ -76,9 +75,9 @@ class Permutation(FrozenDict):
 
     __slots__ = ('__orbits', '__order')
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args):
         # Extract the mapping from the arguments
-        self = super().__new__(cls, *args, **kwargs)
+        self = super().__new__(cls, *args)
 
         # Decompose the mapping into orbits
         unseen = set(self.keys())
@@ -107,7 +106,7 @@ class Permutation(FrozenDict):
         except TypeError:
             pass
 
-        if len(orbits) == 0:
+        if not orbits:
             # Got the identity map, return the singleton
             return IDENTITY
         elif len(orbits) == 1:
@@ -130,7 +129,7 @@ class Permutation(FrozenDict):
         if len(args) == 1 and hasattr(args[0], '__iter__'):
             args = args[0]
 
-        if len(args) == 0:
+        if not args:
             # Empty product
             return IDENTITY
         elif len(args) == 1:
@@ -199,7 +198,7 @@ class Cycle(Permutation):
     If the argument is not a cyclic permutation, then ValueError is raised.
     '''
 
-    __slots__ = ('__cycle')
+    __slots__ = ('__cycle', )
 
     def __new__(cls, *args):
         if len(args) == 1 and hasattr(args[0], '__iter__'):
@@ -235,7 +234,7 @@ class Cycle(Permutation):
         except TypeError:
             pass
 
-        self = FrozenDict.__new__(cls, mapping)
+        self = _FrozenDict.__new__(cls, mapping)
         self.__cycle = args
         return self
 
@@ -268,7 +267,7 @@ class Cycle(Permutation):
             cycle = []
             index = 0
             for _ in range(order):
-                index  = (index + exp) % order
+                index = (index + exp) % order
                 cycle.append(self.__cycle[index])
             return Cycle(cycle)
 
@@ -296,7 +295,7 @@ class Identity(Cycle):
 
     __slots__ = ()
 
-    __new__ = FrozenDict.__new__
+    __new__ = _FrozenDict.__new__
 
     def __iter__(self):
         return iter([])
@@ -342,10 +341,10 @@ def random_permutation(*args, **kwargs):
     the random number generator used to shuffle.
     '''
     rng = kwargs.pop('random', None)
-    x = _make_domain(*args, **kwargs)
-    y = list(x)
-    _random.shuffle(y, rng)
-    return Permutation(zip(x, y))
+    domain = _make_domain(*args, **kwargs)
+    vals = list(domain)
+    _random.shuffle(vals, rng)
+    return Permutation(zip(domain, vals))
 
 def random_cycle(*args, **kwargs):
     '''random_cycle(n) -> random cycle of n elements
@@ -357,6 +356,6 @@ def random_cycle(*args, **kwargs):
     the random number generator used to shuffle.
     '''
     rng = kwargs.pop('random', None)
-    x = _make_domain(*args, **kwargs)
-    _random.shuffle(x, rng)
-    return Cycle(x)
+    cycle = _make_domain(*args, **kwargs)
+    _random.shuffle(cycle, rng)
+    return Cycle(cycle)
