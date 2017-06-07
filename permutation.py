@@ -129,18 +129,23 @@ class Permutation(_FrozenDict):
         if len(args) == 1 and hasattr(args[0], '__iter__'):
             args = args[0]
 
-        if not args:
-            # Empty product
-            return IDENTITY
-        elif len(args) == 1:
-            # Product with one term
-            return Permutation(args)
-
-        mapping = {}
-        for perm in reversed(args):
-            mapping.update(perm * mapping)
+        mapping = IDENTITY
+        for perm in args:
+            mapping *= perm
 
         return cls(mapping)
+
+    def as_two_cycles(perm):
+        'Return an iterator that decompose the permutation into two cycles'
+        for orbit in perm.orbits():
+            if len(orbit) == 2:
+                yield orbit
+            else:
+                first = next(iter(orbit))
+                for elem in reversed(orbit):
+                    if first == elem:
+                        break
+                    yield Cycle(first, elem)
 
     def order(self):
         'Returns the multiplicative order'
@@ -194,7 +199,7 @@ class Permutation(_FrozenDict):
         return self[key]
 
     def __repr__(self):
-        return '%s.Permutation.from_product%r' % (__name__, self.orbits())
+        return 'Permutation.from_product%r' % self.orbits()
 
 class Cycle(Permutation):
     '''Cycle(iterable) -> create a cyclic permutation that maps each
@@ -247,6 +252,9 @@ class Cycle(Permutation):
     def __iter__(self):
         return iter(self.__cycle)
 
+    def __reversed__(self):
+        return reversed(self.__cycle)
+
     def order(self):
         return len(self)
 
@@ -294,7 +302,7 @@ class Cycle(Permutation):
         return Permutation.from_product(cycles)
 
     def __repr__(self):
-        return '%s.Cycle%r' % (__name__, self.__cycle)
+        return 'Cycle%r' % (self.__cycle, )
 
 class Identity(Cycle):
     'The identity permutation that maps all elements to themselves'
@@ -325,7 +333,7 @@ class Identity(Cycle):
         return other
 
     def __repr__(self):
-        return '%s.IDENTITY' % __name__
+        return 'Permutation()'
 
 # The identity singleton
 IDENTITY = Identity()
