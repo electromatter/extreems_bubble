@@ -62,7 +62,7 @@ class _FrozenDict(_collections.abc.Mapping):
         return self.__hash
 
     def __repr__(self):
-        return 'FrozenDict({!r})'.format(self.__map)
+        return '{}({!r})'.format(self.__class__.__name__, self.__map)
 
 class Permutation(_FrozenDict):
     '''Permutation() -> IDENTITY
@@ -199,7 +199,7 @@ class Permutation(_FrozenDict):
         return self[key]
 
     def __repr__(self):
-        return 'Permutation.from_product{!r}'.format(self.orbits())
+        return '{}.from_product{!r}'.format(self.__class__.__name__, self.orbits())
 
 class Cycle(Permutation):
     '''Cycle(iterable) -> create a cyclic permutation that maps each
@@ -302,7 +302,7 @@ class Cycle(Permutation):
         return Permutation.from_product(cycles)
 
     def __repr__(self):
-        return 'Cycle{!r}'.format(self.__cycle)
+        return '{}{!r}'.format(self.__class__.__name__, self.__cycle)
 
 class Identity(Cycle):
     'The identity permutation that maps all elements to themselves'
@@ -333,7 +333,7 @@ class Identity(Cycle):
         return other
 
     def __repr__(self):
-        return 'Permutation()'
+        return '{}()'.format(self.__class__.__name__)
 
 # The identity singleton
 IDENTITY = Identity()
