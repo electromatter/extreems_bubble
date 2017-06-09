@@ -2,7 +2,7 @@
 
 import collections as _collections
 import random as _random
-
+#pylint: disable=protected-access
 class _FrozenDict(object):
     '''FrozenDict() -> empty immutable mapping
     FrozenDict(mapping) -> immutable copy of mapping
@@ -80,7 +80,10 @@ class Permutation(_FrozenDict):
 
     __slots__ = ('_orbits', '_order', '_cycle')
 
-    def __new__(cls, *args, _cycle=None):
+    def __new__(cls, *args, _cycle=None, **kwargs):
+        if kwargs:
+            raise TypeError('unexpected keyword arguments')
+
         if _cycle is not None and len(_cycle) > 1:
             # We got a cycle!
             cycle = tuple(_cycle)
@@ -91,7 +94,9 @@ class Permutation(_FrozenDict):
             return self
 
         # Decompose the mapping into orbits
-        self = super().__new__(cls, ((key, value) for key, value in dict(*args).items() if key != value))
+        self = super().__new__(cls, ((key, value) \
+                                        for key, value in dict(*args).items() \
+                                        if key != value))
         unseen = set(self.keys())
         orbits = []
         while unseen:
