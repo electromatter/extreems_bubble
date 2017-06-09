@@ -91,7 +91,7 @@ class Permutation(_FrozenDict):
             return self
 
         # Decompose the mapping into orbits
-        self = super().__new__(cls, *args)
+        self = super().__new__(cls, ((key, value) for key, value in dict(*args).items() if key != value))
         unseen = set(self.keys())
         orbits = []
         while unseen:
@@ -250,7 +250,7 @@ class Permutation(_FrozenDict):
 
     def __reversed__(self):
         if hasattr(self, '_cycle'):
-            return iter(self._cycle)
+            return reversed(self._cycle)
         return super().__iter__()
 
     def __getitem__(self, key):
