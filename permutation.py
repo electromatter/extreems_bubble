@@ -43,9 +43,9 @@ class _FrozenDict(_collections.abc.Mapping):
 
     __slots__ = ('__map', '__hash')
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args):
         self = super().__new__(cls)
-        self.__map = dict(*args, **kwargs)
+        self.__map = dict(*args)
         self.__hash = hash(frozenset(self.__map))
         return self
 
@@ -135,9 +135,9 @@ class Permutation(_FrozenDict):
 
         return cls(mapping)
 
-    def as_two_cycles(perm):
+    def as_two_cycles(self):
         'Return an iterator that decompose the permutation into two cycles'
-        for orbit in perm.orbits():
+        for orbit in self.orbits():
             if len(orbit) == 2:
                 yield orbit
             else:
