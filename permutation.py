@@ -43,9 +43,9 @@ class _FrozenDict(_collections.abc.Mapping):
 
     __slots__ = ('__map', '__hash')
 
-    def __new__(cls, *args):
+    def __new__(cls, *args, **kwargs):
         self = super().__new__(cls)
-        self.__map = dict(*args)
+        self.__map = dict(*args, **kwargs)
         self.__hash = hash(frozenset(self.__map))
         return self
 
