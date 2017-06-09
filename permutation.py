@@ -2,7 +2,9 @@
 
 import collections as _collections
 import random as _random
+
 #pylint: disable=protected-access
+
 class _FrozenDict(object):
     '''FrozenDict() -> empty immutable mapping
     FrozenDict(mapping) -> immutable copy of mapping
