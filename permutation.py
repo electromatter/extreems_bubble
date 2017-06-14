@@ -106,7 +106,7 @@ class Permutation(_FrozenDict):
             orbit = []
 
             while True:
-                orbit.append(key)
+                orbit.append(key)#BUG
                 key = self[key]
                 if key == first:
                     break
@@ -121,7 +121,7 @@ class Permutation(_FrozenDict):
         # Ensure orbits are always in the same order to make
         # it nicer to work with.
         try:
-            orbits.sort()
+            orbits.sort(key=min)
         except TypeError:
             pass
 
